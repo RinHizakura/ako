@@ -1,5 +1,4 @@
 use crate::lexer::Lexer;
-use crate::token::Token;
 
 pub struct Evaluator {
     expr: String,
@@ -15,7 +14,7 @@ impl Evaluator {
         let mut cur_token = lexer.gettoken();
 
         while let Some(token) = cur_token {
-            println!("{:?}", token.t);
+            println!("{:?}", token);
             cur_token = lexer.gettoken();
         }
     }

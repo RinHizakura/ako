@@ -15,7 +15,27 @@ impl Lexer {
             self.pos += 1;
             return match ch {
                 '+' => Some(Token::plus()),
-                _ => Some(Token::unknown()),
+                '-' => Some(Token::minus()),
+                '*' => Some(Token::asterisk()),
+                '/' => Some(Token::slash()),
+                _ => {
+                    if let Some(n) = ch.to_digit(10) {
+                        let mut n = n as usize;
+                        while let Some(next_ch) = self.expr.chars().nth(self.pos) {
+                            if let Some(digit) = next_ch.to_digit(10) {
+                                n *= 10;
+                                n += digit as usize;
+                                self.pos += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        Some(Token::int(n))
+                    } else {
+                        // TODO: support variable name token
+                        Some(Token::unknown())
+                    }
+                }
             };
         }
 
