@@ -26,7 +26,9 @@ impl Lexer {
     pub fn gettoken(&mut self) -> Option<Token> {
         if let Some(ch) = self.expr.chars().nth(self.pos) {
             self.pos += 1;
+
             return match ch {
+                ' ' => self.gettoken(), // skip the space
                 '+' => Some(Token::plus()),
                 '-' => Some(Token::minus()),
                 '*' => Some(Token::asterisk()),
