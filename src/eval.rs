@@ -1,21 +1,80 @@
 use crate::lexer::Lexer;
+use crate::token::{Token, Type};
+
+enum Expression {
+    Int(usize),
+}
+
+struct Statement {
+    expression: Expression,
+}
+
+impl Statement {
+    pub fn new(expression: Expression) -> Self {
+        Statement { expression }
+    }
+}
 
 pub struct Evaluator {
-    expr: String,
+    statement: String,
+    lexer: Lexer,
+    cur_token: Option<Token>,
+    next_token: Option<Token>,
+    expr_stack: Vec<Expression>,
 }
 
 impl Evaluator {
-    pub fn new(expr: String) -> Self {
-        Evaluator { expr: expr }
+    pub fn new(statement: String) -> Self {
+        Evaluator {
+            statement: statement.clone(),
+            lexer: Lexer::new(statement),
+            cur_token: None,
+            next_token: None,
+            expr_stack: vec![],
+        }
+    }
+
+    fn update_token(&mut self) {
+        self.cur_token = self.next_token.take();
+        self.next_token = self.lexer.gettoken();
+    }
+
+    fn parse_expression(&mut self) -> Option<Expression> {
+        let left;
+        if let Some(token) = &self.cur_token {
+            left = match token.t {
+                Type::TokenInt => Some(Expression::Int(token.to_int())),
+                _ => todo!(),
+            };
+        }
+
+        if let Some(token) = &self.next_token {
+            left = match token.t {
+                Type::TokenPlus => todo!(),
+                _ => unreachable!(),
+            };
+        }
+
+        None
+    }
+
+    fn parse_expr_statement(&mut self) -> Option<Statement> {
+        if let Some(expr) = self.parse_expression() {
+            Some(Statement::new(expr))
+        } else {
+            None
+        }
+    }
+
+    fn parse_statement(&mut self) -> Option<Statement> {
+        // TODO: support more different statement type
+        self.parse_expr_statement()
     }
 
     pub fn compile(&mut self) {
-        let mut lexer = Lexer::new(self.expr.clone());
-        let mut cur_token = lexer.gettoken();
+        self.next_token = self.lexer.gettoken();
+        self.update_token();
 
-        while let Some(token) = cur_token {
-            println!("{:?}", token);
-            cur_token = lexer.gettoken();
-        }
+        while let Some(s) = self.parse_statement() {}
     }
 }

@@ -1,17 +1,20 @@
 use crate::token::Token;
 
 pub struct Lexer {
-    expr: String,
+    statement: String,
     pos: usize,
 }
 
 impl Lexer {
-    pub fn new(expr: String) -> Self {
-        Lexer { expr: expr, pos: 0 }
+    pub fn new(statement: String) -> Self {
+        Lexer {
+            statement: statement,
+            pos: 0,
+        }
     }
 
     fn gettoken_int(&mut self, mut n: usize) -> Option<Token> {
-        while let Some(next_ch) = self.expr.chars().nth(self.pos) {
+        while let Some(next_ch) = self.statement.chars().nth(self.pos) {
             if let Some(digit) = next_ch.to_digit(10) {
                 n *= 10;
                 n += digit as usize;
@@ -24,7 +27,7 @@ impl Lexer {
     }
 
     pub fn gettoken(&mut self) -> Option<Token> {
-        if let Some(ch) = self.expr.chars().nth(self.pos) {
+        if let Some(ch) = self.statement.chars().nth(self.pos) {
             self.pos += 1;
 
             return match ch {

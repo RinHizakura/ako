@@ -22,6 +22,13 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn to_int(&self) -> usize {
+        match self.literal {
+            Literal::Int(u) => u,
+            _ => panic!("A non-Int type Token cannot be transformed to integer"),
+        }
+    }
+
     pub fn plus() -> Self {
         Token {
             t: Type::TokenPlus,
