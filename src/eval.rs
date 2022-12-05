@@ -20,7 +20,6 @@ pub struct Evaluator {
     lexer: Lexer,
     cur_token: Option<Token>,
     next_token: Option<Token>,
-    expr_stack: Vec<Expression>,
 }
 
 impl Evaluator {
@@ -30,7 +29,6 @@ impl Evaluator {
             lexer: Lexer::new(statement),
             cur_token: None,
             next_token: None,
-            expr_stack: vec![],
         }
     }
 
