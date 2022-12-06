@@ -21,8 +21,8 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn int(u: usize) -> Self {
-        Expression::Int(u)
+    pub fn int(i: usize) -> Self {
+        Expression::Int(i)
     }
 
     pub fn infix(op: OpType, left: Option<Expression>, right: Option<Expression>) -> Self {
@@ -46,11 +46,11 @@ impl Expression {
 
 #[derive(Debug)]
 pub struct Statement {
-    expression: Expression,
+    pub expr: Expression,
 }
 
 impl Statement {
-    pub fn new(expression: Expression) -> Self {
-        Statement { expression }
+    pub fn new(expr: Expression) -> Self {
+        Statement { expr }
     }
 }

@@ -1,8 +1,9 @@
+use crate::compiler::Compiler;
 use crate::lexer::Lexer;
-use crate::stmt::{Expression, OpType, Statement};
+use crate::stmt::*;
 use crate::token::{Token, TokenType};
 
-pub struct Parser {
+struct Parser {
     lexer: Option<Lexer>,
     cur_token: Option<Token>,
     next_token: Option<Token>,
@@ -91,13 +92,13 @@ impl Parser {
         self.cur_token = None;
         self.next_token = self.lexer.as_mut().unwrap().gettoken();
 
-        let mut statements = vec![];
+        let mut stmts = vec![];
         while let Some(s) = self.parse_statement() {
             println!("stmt {:?}", s);
-            statements.push(s);
+            stmts.push(s);
         }
 
-        statements
+        stmts
     }
 }
 
@@ -113,5 +114,8 @@ impl Evaluator {
     pub fn compile(&mut self) {
         let mut parser = Parser::new();
         let v = parser.parse_program(self.program.clone());
+
+        let mut compiler = Compiler::new();
+        compiler.compile(v);
     }
 }
