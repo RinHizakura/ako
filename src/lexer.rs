@@ -13,17 +13,16 @@ impl Lexer {
         }
     }
 
-    fn gettoken_int(&mut self, mut n: usize) -> Option<Token> {
+    fn gettoken_int(&mut self, mut s: String) -> Option<Token> {
         while let Some(next_ch) = self.statement.chars().nth(self.pos) {
-            if let Some(digit) = next_ch.to_digit(10) {
-                n *= 10;
-                n += digit as usize;
+            if next_ch.is_ascii_digit() {
+                s.push(next_ch);
                 self.pos += 1;
             } else {
                 break;
             }
         }
-        Some(Token::int(n))
+        Some(Token::int(s))
     }
 
     pub fn gettoken(&mut self) -> Option<Token> {
@@ -37,8 +36,8 @@ impl Lexer {
                 '*' => Some(Token::asterisk()),
                 '/' => Some(Token::slash()),
                 _ => {
-                    if let Some(n) = ch.to_digit(10) {
-                        self.gettoken_int(n as usize)
+                    if ch.is_ascii_digit() {
+                        self.gettoken_int(ch.to_string())
                     } else {
                         // TODO: support variable name token
                         Some(Token::unknown())

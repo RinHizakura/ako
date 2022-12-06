@@ -1,19 +1,6 @@
 use crate::lexer::Lexer;
-use crate::token::{Token, Type};
-
-enum Expression {
-    Int(usize),
-}
-
-struct Statement {
-    expression: Expression,
-}
-
-impl Statement {
-    pub fn new(expression: Expression) -> Self {
-        Statement { expression }
-    }
-}
+use crate::stmt::{Expression, OpType, Statement};
+use crate::token::{Token, TokenType};
 
 pub struct Evaluator {
     statement: String,
@@ -32,28 +19,59 @@ impl Evaluator {
         }
     }
 
+    fn token_op(token: &Token) -> OpType {
+        match token.t {
+            TokenType::TokenPlus => OpType::OpPlus,
+            TokenType::TokenMinus => OpType::OpMinus,
+            TokenType::TokenAsterisk => OpType::OpMul,
+            TokenType::TokenSlash => OpType::OpDiv,
+            _ => OpType::OpUnknown,
+        }
+    }
+
+    fn token_int(token: &Token) -> usize {
+        let chars = token.literal.chars();
+        let mut n = 0;
+        for c in chars {
+            if let Some(digit) = c.to_digit(10) {
+                n *= 10;
+                n += digit as usize;
+            } else {
+                break;
+            }
+        }
+        n
+    }
+
     fn update_token(&mut self) {
         self.cur_token = self.next_token.take();
         self.next_token = self.lexer.gettoken();
     }
 
     fn parse_expression(&mut self) -> Option<Expression> {
-        let left;
+        let mut left = None;
+        self.update_token();
         if let Some(token) = &self.cur_token {
             left = match token.t {
-                Type::TokenInt => Some(Expression::Int(token.to_int())),
+                TokenType::TokenInt => Some(Expression::int(Self::token_int(token))),
                 _ => todo!(),
             };
         }
 
-        if let Some(token) = &self.next_token {
+        self.update_token();
+        // FIXME: Clone for ownership model, any better approach?
+        let cur_token = self.cur_token.clone();
+        if let Some(token) = cur_token {
             left = match token.t {
-                Type::TokenPlus => todo!(),
-                _ => unreachable!(),
+                TokenType::TokenPlus => {
+                    let right = self.parse_expression();
+                    Some(Expression::infix(Self::token_op(&token), left, right))
+                }
+                _ => todo!(),
             };
         }
 
-        None
+        left
     }
 
     fn parse_expr_statement(&mut self) -> Option<Statement> {
@@ -70,9 +88,11 @@ impl Evaluator {
     }
 
     pub fn compile(&mut self) {
+        // Initialize the token cursor
         self.next_token = self.lexer.gettoken();
-        self.update_token();
 
-        while let Some(s) = self.parse_statement() {}
+        while let Some(s) = self.parse_statement() {
+            println!("stmt {:?}", s);
+        }
     }
 }

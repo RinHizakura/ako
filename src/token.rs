@@ -1,5 +1,5 @@
-#[derive(Debug)]
-pub enum Type {
+#[derive(Debug, Clone)]
+pub enum TokenType {
     TokenPlus,
     TokenMinus,
     TokenAsterisk,
@@ -8,66 +8,52 @@ pub enum Type {
     TokenUnknown,
 }
 
-#[derive(Debug)]
-pub enum Literal {
-    Operator(String),
-    Int(usize),
-    Unknown(()),
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
-    pub t: Type,
-    pub literal: Literal,
+    pub t: TokenType,
+    pub literal: String,
 }
 
 impl Token {
-    pub fn to_int(&self) -> usize {
-        match self.literal {
-            Literal::Int(u) => u,
-            _ => panic!("A non-Int type Token cannot be transformed to integer"),
-        }
-    }
-
     pub fn plus() -> Self {
         Token {
-            t: Type::TokenPlus,
-            literal: Literal::Operator("+".to_string()),
+            t: TokenType::TokenPlus,
+            literal: "+".to_string(),
         }
     }
 
     pub fn minus() -> Self {
         Token {
-            t: Type::TokenMinus,
-            literal: Literal::Operator("-".to_string()),
+            t: TokenType::TokenMinus,
+            literal: "-".to_string(),
         }
     }
 
     pub fn asterisk() -> Self {
         Token {
-            t: Type::TokenAsterisk,
-            literal: Literal::Operator("*".to_string()),
+            t: TokenType::TokenAsterisk,
+            literal: "*".to_string(),
         }
     }
 
     pub fn slash() -> Self {
         Token {
-            t: Type::TokenSlash,
-            literal: Literal::Operator("/".to_string()),
+            t: TokenType::TokenSlash,
+            literal: "/".to_string(),
         }
     }
 
-    pub fn int(n: usize) -> Self {
+    pub fn int(n: String) -> Self {
         Token {
-            t: Type::TokenInt,
-            literal: Literal::Int(n),
+            t: TokenType::TokenInt,
+            literal: n,
         }
     }
 
     pub fn unknown() -> Self {
         Token {
-            t: Type::TokenUnknown,
-            literal: Literal::Unknown(()),
+            t: TokenType::TokenUnknown,
+            literal: "".to_string(),
         }
     }
 }
