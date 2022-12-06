@@ -2,18 +2,16 @@ use crate::lexer::Lexer;
 use crate::stmt::{Expression, OpType, Statement};
 use crate::token::{Token, TokenType};
 
-pub struct Evaluator {
-    statement: String,
-    lexer: Lexer,
+pub struct Parser {
+    lexer: Option<Lexer>,
     cur_token: Option<Token>,
     next_token: Option<Token>,
 }
 
-impl Evaluator {
-    pub fn new(statement: String) -> Self {
-        Evaluator {
-            statement: statement.clone(),
-            lexer: Lexer::new(statement),
+impl Parser {
+    pub fn new() -> Self {
+        Parser {
+            lexer: None,
             cur_token: None,
             next_token: None,
         }
@@ -45,7 +43,7 @@ impl Evaluator {
 
     fn update_token(&mut self) {
         self.cur_token = self.next_token.take();
-        self.next_token = self.lexer.gettoken();
+        self.next_token = self.lexer.as_mut().unwrap().gettoken();
     }
 
     fn parse_expression(&mut self) -> Option<Expression> {
@@ -87,12 +85,33 @@ impl Evaluator {
         self.parse_expr_statement()
     }
 
-    pub fn compile(&mut self) {
+    pub fn parse_program(&mut self, program: String) -> Vec<Statement> {
+        self.lexer = Some(Lexer::new(program));
         // Initialize the token cursor
-        self.next_token = self.lexer.gettoken();
+        self.cur_token = None;
+        self.next_token = self.lexer.as_mut().unwrap().gettoken();
 
+        let mut statements = vec![];
         while let Some(s) = self.parse_statement() {
             println!("stmt {:?}", s);
+            statements.push(s);
         }
+
+        statements
+    }
+}
+
+pub struct Evaluator {
+    program: String,
+}
+
+impl Evaluator {
+    pub fn new(program: String) -> Self {
+        Evaluator { program }
+    }
+
+    pub fn compile(&mut self) {
+        let mut parser = Parser::new();
+        let v = parser.parse_program(self.program.clone());
     }
 }

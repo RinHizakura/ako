@@ -8,7 +8,7 @@ pub enum OpType {
 }
 
 #[derive(Debug)]
-struct InfixExpression {
+pub struct InfixExpression {
     op: OpType,
     left: Option<Box<Expression>>,
     right: Option<Box<Expression>>,
