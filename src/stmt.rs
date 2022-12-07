@@ -26,16 +26,8 @@ impl Expression {
     }
 
     pub fn infix(op: OpType, left: Option<Expression>, right: Option<Expression>) -> Self {
-        let left = if left.is_none() {
-            None
-        } else {
-            Some(Box::new(left.unwrap()))
-        };
-        let right = if right.is_none() {
-            None
-        } else {
-            Some(Box::new(right.unwrap()))
-        };
+        let left = left.map(|o| Box::new(o));
+        let right = right.map(|o| Box::new(o));
         Expression::Infix(InfixExpression {
             op: op,
             left: left,
