@@ -17,7 +17,6 @@ impl Instruction {
         let operand_width = Self::operand_width(opcode);
 
         let mut inst_bytes = vec![opcode];
-        let cnt = 0;
         for operand in operands {
             for i in 0..operand_width {
                 inst_bytes.push((operand >> (8 * i)) as u32 as u8);
@@ -54,7 +53,6 @@ impl Compiler {
         match expr {
             Expression::Int(i) => self.compile_int_expr(i),
             Expression::Infix(expr) => self.compile_infix_expr(),
-            _ => todo!(),
         }
     }
 

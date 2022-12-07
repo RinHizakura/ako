@@ -1,9 +1,8 @@
-use crate::compiler::Compiler;
 use crate::lexer::Lexer;
 use crate::stmt::*;
 use crate::token::{Token, TokenType};
 
-struct Parser {
+pub struct Parser {
     lexer: Option<Lexer>,
     cur_token: Option<Token>,
     next_token: Option<Token>,
@@ -99,23 +98,5 @@ impl Parser {
         }
 
         stmts
-    }
-}
-
-pub struct Evaluator {
-    program: String,
-}
-
-impl Evaluator {
-    pub fn new(program: String) -> Self {
-        Evaluator { program }
-    }
-
-    pub fn compile(&mut self) {
-        let mut parser = Parser::new();
-        let v = parser.parse_program(self.program.clone());
-
-        let mut compiler = Compiler::new();
-        compiler.compile(v);
     }
 }

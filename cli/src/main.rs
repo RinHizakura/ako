@@ -1,4 +1,4 @@
-use ako::eval::Evaluator;
+use ako::Ako;
 use rustyline::Editor;
 
 fn print_version() {
@@ -11,8 +11,8 @@ fn repl() {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                let mut eval = Evaluator::new(line);
-                eval.compile();
+                let mut ako = Ako::new(line);
+                ako.compile();
             }
             Err(err) => panic!("Readline error: {:?}", err),
         }
