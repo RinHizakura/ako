@@ -16,12 +16,12 @@ pub struct InfixExpression {
 
 #[derive(Debug)]
 pub enum Expression {
-    Int(usize),
+    Int(i32),
     Infix(InfixExpression),
 }
 
 impl Expression {
-    pub fn int(i: usize) -> Self {
+    pub fn int(i: i32) -> Self {
         Expression::Int(i)
     }
 

@@ -28,13 +28,13 @@ impl Parser {
         }
     }
 
-    fn token_int(token: &Token) -> usize {
+    fn token_int(token: &Token) -> i32 {
         let chars = token.literal.chars();
         let mut n = 0;
         for c in chars {
             if let Some(digit) = c.to_digit(10) {
                 n *= 10;
-                n += digit as usize;
+                n += digit as i32;
             } else {
                 break;
             }
