@@ -12,7 +12,10 @@ fn repl() {
         match readline {
             Ok(line) => {
                 let mut ako = Ako::new(line);
-                ako.compile();
+                if ako.compile().is_err() {
+                    println!("Syntax error for the input");
+                    continue;
+                }
             }
             Err(err) => panic!("Readline error: {:?}", err),
         }

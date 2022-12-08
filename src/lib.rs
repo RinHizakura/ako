@@ -1,11 +1,12 @@
 mod compiler;
-mod parser;
 mod lexer;
+mod parser;
 mod stmt;
 mod token;
 
 use crate::compiler::Compiler;
 use crate::parser::Parser;
+use anyhow::Result;
 
 pub struct Ako {
     program: String,
@@ -16,11 +17,13 @@ impl Ako {
         Ako { program }
     }
 
-    pub fn compile(&mut self) {
+    pub fn compile(&mut self) -> Result<()> {
         let mut parser = Parser::new();
-        let v = parser.parse_program(self.program.clone());
+        let v = parser.parse_program(self.program.clone())?;
 
         let mut compiler = Compiler::new();
-        compiler.compile(v);
+        compiler.compile(v)?;
+
+        Ok(())
     }
 }

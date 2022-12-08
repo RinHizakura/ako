@@ -1,6 +1,7 @@
 use crate::lexer::Lexer;
 use crate::stmt::*;
 use crate::token::{Token, TokenType};
+use anyhow::{anyhow, Result};
 
 pub struct Parser {
     lexer: Option<Lexer>,
@@ -19,8 +20,8 @@ impl Parser {
 
     fn token_op(token: &Token) -> OpType {
         match token.t {
-            TokenType::TokenPlus => OpType::OpPlus,
-            TokenType::TokenMinus => OpType::OpMinus,
+            TokenType::TokenPlus => OpType::OpAdd,
+            TokenType::TokenMinus => OpType::OpSubtract,
             TokenType::TokenAsterisk => OpType::OpMul,
             TokenType::TokenSlash => OpType::OpDiv,
             _ => OpType::OpUnknown,
@@ -46,13 +47,13 @@ impl Parser {
         self.next_token = self.lexer.as_mut().unwrap().gettoken();
     }
 
-    fn parse_expression(&mut self) -> Option<Expression> {
+    fn parse_expression(&mut self) -> Result<Option<Expression>> {
         let mut left = None;
         self.update_token();
         if let Some(token) = &self.cur_token {
             left = match token.t {
                 TokenType::TokenInt => Some(Expression::int(Self::token_int(token))),
-                _ => todo!(),
+                _ => return Err(anyhow!("Parser error: unexpected token in the expression")),
             };
         }
 
@@ -62,41 +63,38 @@ impl Parser {
         if let Some(token) = cur_token {
             left = match token.t {
                 TokenType::TokenPlus => {
-                    let right = self.parse_expression();
+                    let right = self.parse_expression()?;
                     Some(Expression::infix(Self::token_op(&token), left, right))
                 }
-                _ => todo!(),
+                _ => return Err(anyhow!("Parser error: unexpected token in the expression")),
             };
         }
 
-        left
+        Ok(left)
     }
 
-    fn parse_expr_statement(&mut self) -> Option<Statement> {
-        if let Some(expr) = self.parse_expression() {
-            Some(Statement::new(expr))
-        } else {
-            None
-        }
+    fn parse_expr_statement(&mut self) -> Result<Option<Statement>> {
+        let expr = self.parse_expression()?;
+        Ok(expr.map(|e| Statement::new(e)))
     }
 
-    fn parse_statement(&mut self) -> Option<Statement> {
+    fn parse_statement(&mut self) -> Result<Option<Statement>> {
         // TODO: support more different statement type
         self.parse_expr_statement()
     }
 
-    pub fn parse_program(&mut self, program: String) -> Vec<Statement> {
+    pub fn parse_program(&mut self, program: String) -> Result<Vec<Statement>> {
         self.lexer = Some(Lexer::new(program));
         // Initialize the token cursor
         self.cur_token = None;
         self.next_token = self.lexer.as_mut().unwrap().gettoken();
 
         let mut stmts = vec![];
-        while let Some(s) = self.parse_statement() {
+        while let Some(s) = self.parse_statement()? {
             println!("stmt {:?}", s);
             stmts.push(s);
         }
 
-        stmts
+        Ok(stmts)
     }
 }

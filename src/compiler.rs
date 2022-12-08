@@ -1,4 +1,5 @@
 use crate::stmt::*;
+use anyhow::{anyhow, Result};
 
 pub const OPCODE_CONST: u8 = 0;
 pub const OPCODE_ADD: u8 = 1;
@@ -41,29 +42,49 @@ impl Compiler {
         self.insts.push(inst);
     }
 
-    fn compile_infix_expr(&mut self) {
-        todo!();
+    fn compile_infix_expr(&mut self, infix: InfixExpression) -> Result<()> {
+        if let Some(left) = infix.left {
+            self.compile_expr(*left)?;
+        }
+        if let Some(right) = infix.right {
+            self.compile_expr(*right)?;
+        }
+
+        match infix.op {
+            OpType::OpAdd => self.emit(OPCODE_ADD, &[]),
+            _ => {
+                return Err(anyhow!(
+                    "Compile error: Unknown operator in the infix expression"
+                ))
+            }
+        }
+
+        Ok(())
     }
 
-    fn compile_int_expr(&mut self, i: i32) {
+    fn compile_int_expr(&mut self, i: i32) -> Result<()> {
+        // The operand will be constant value itself
         self.emit(OPCODE_CONST, &[i]);
+        Ok(())
     }
 
-    fn compile_expr(&mut self, expr: Expression) {
+    fn compile_expr(&mut self, expr: Expression) -> Result<()> {
         match expr {
             Expression::Int(i) => self.compile_int_expr(i),
-            Expression::Infix(expr) => self.compile_infix_expr(),
+            Expression::Infix(infix) => self.compile_infix_expr(infix),
         }
     }
 
-    fn compile_statement(&mut self, stmt: Statement) {
+    fn compile_statement(&mut self, stmt: Statement) -> Result<()> {
         // TODO: support more different statement type
-        self.compile_expr(stmt.expr);
+        self.compile_expr(stmt.expr)
     }
 
-    pub fn compile(&mut self, stmts: Vec<Statement>) {
+    pub fn compile(&mut self, stmts: Vec<Statement>) -> Result<()> {
         for stmt in stmts {
-            self.compile_statement(stmt);
+            self.compile_statement(stmt)?;
         }
+
+        Ok(())
     }
 }

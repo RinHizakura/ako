@@ -1,7 +1,7 @@
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum OpType {
-    OpPlus,
-    OpMinus,
+    OpAdd,
+    OpSubtract,
     OpMul,
     OpDiv,
     OpUnknown,
@@ -9,9 +9,9 @@ pub enum OpType {
 
 #[derive(Debug)]
 pub struct InfixExpression {
-    op: OpType,
-    left: Option<Box<Expression>>,
-    right: Option<Box<Expression>>,
+    pub op: OpType,
+    pub left: Option<Box<Expression>>,
+    pub right: Option<Box<Expression>>,
 }
 
 #[derive(Debug)]
