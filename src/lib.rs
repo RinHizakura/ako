@@ -22,7 +22,7 @@ impl Ako {
         let v = parser.parse_program(self.program.clone())?;
 
         let mut compiler = Compiler::new();
-        compiler.compile(v)?;
+        let bytecode = compiler.compile(v)?;
 
         Ok(())
     }

@@ -4,8 +4,15 @@ use anyhow::{anyhow, Result};
 pub const OPCODE_CONST: u8 = 0;
 pub const OPCODE_ADD: u8 = 1;
 
-struct Instruction(Vec<u8>);
-impl Instruction {
+pub struct Compiler {
+    bytecode: Option<Vec<u8>>,
+}
+
+impl Compiler {
+    pub fn new() -> Self {
+        Compiler { bytecode: None }
+    }
+
     fn operand_width(opcode: u8) -> usize {
         match opcode {
             OPCODE_CONST => 4,
@@ -14,32 +21,17 @@ impl Instruction {
         }
     }
 
-    pub fn new(opcode: u8, operands: &[i32]) -> Self {
+    fn emit(&mut self, opcode: u8, operands: &[i32]) {
         let operand_width = Self::operand_width(opcode);
 
-        let mut inst_bytes = vec![opcode];
-        for operand in operands {
-            for i in 0..operand_width {
-                inst_bytes.push((operand >> (8 * i)) as u32 as u8);
+        if let Some(ref mut bytecode) = self.bytecode {
+            bytecode.push(opcode);
+            for operand in operands {
+                for i in 0..operand_width {
+                    bytecode.push((operand >> (8 * i)) as u32 as u8);
+                }
             }
         }
-
-        Instruction(inst_bytes)
-    }
-}
-
-pub struct Compiler {
-    insts: Vec<Instruction>,
-}
-
-impl Compiler {
-    pub fn new() -> Self {
-        Compiler { insts: vec![] }
-    }
-
-    fn emit(&mut self, opcode: u8, operands: &[i32]) {
-        let inst = Instruction::new(opcode, operands);
-        self.insts.push(inst);
     }
 
     fn compile_infix_expr(&mut self, infix: InfixExpression) -> Result<()> {
@@ -80,11 +72,13 @@ impl Compiler {
         self.compile_expr(stmt.expr)
     }
 
-    pub fn compile(&mut self, stmts: Vec<Statement>) -> Result<()> {
+    pub fn compile(&mut self, stmts: Vec<Statement>) -> Result<Vec<u8>> {
+        self.bytecode = Some(vec![]);
         for stmt in stmts {
             self.compile_statement(stmt)?;
         }
 
-        Ok(())
+        let bytecode = self.bytecode.take().unwrap();
+        Ok(bytecode)
     }
 }
