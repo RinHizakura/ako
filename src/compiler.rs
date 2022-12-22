@@ -1,8 +1,6 @@
+use crate::opcode::*;
 use crate::stmt::*;
 use anyhow::{anyhow, Result};
-
-pub const OPCODE_CONST: u8 = 0;
-pub const OPCODE_ADD: u8 = 1;
 
 pub struct Compiler {
     bytecode: Option<Vec<u8>>,
@@ -13,16 +11,8 @@ impl Compiler {
         Compiler { bytecode: None }
     }
 
-    fn operand_width(opcode: u8) -> usize {
-        match opcode {
-            OPCODE_CONST => 4,
-            OPCODE_ADD => 0,
-            _ => unreachable!(),
-        }
-    }
-
     fn emit(&mut self, opcode: u8, operands: &[i32]) {
-        let operand_width = Self::operand_width(opcode);
+        let operand_width = operand_width(opcode);
 
         if let Some(ref mut bytecode) = self.bytecode {
             bytecode.push(opcode);
