@@ -5,8 +5,21 @@ pub struct Vm {
     stack: Vec<Object>,
 }
 
+macro_rules! cast {
+    ($target: expr, $pat: path) => {{
+        if let $pat(a) = $target {
+            // #1
+            a
+        } else {
+            panic!("mismatch variant when cast to {}", stringify!($pat)); // #2
+        }
+    }};
+}
+
+#[derive(Debug)]
 enum Object {
     I(i32),
+    Bool(bool),
 }
 
 impl Vm {
@@ -28,8 +41,21 @@ impl Vm {
             value |= (bytecode[self.ip + 1 + i] as i32) << (8 * i);
         }
         self.stack.push(Object::I(value));
+    }
 
-        self.ip += 1 + operand_width;
+    fn do_add(&mut self) {
+        let right = self
+            .stack
+            .pop()
+            .expect("Fail to pop right operand from stack");
+        let left = self
+            .stack
+            .pop()
+            .expect("Fail to pop left operand from stack");
+
+        let right = cast!(right, Object::I);
+        let left = cast!(left, Object::I);
+        self.stack.push(Object::I(left + right));
     }
 
     pub fn run(&mut self, bytecode: Vec<u8>) {
@@ -38,12 +64,17 @@ impl Vm {
 
         while self.ip < len {
             let opcode = bytecode[self.ip];
+            let operand_width = operand_width(opcode);
+
             match opcode {
                 OPCODE_CONST => self.do_const(&bytecode),
-                OPCODE_ADD => todo!(),
+                OPCODE_ADD => self.do_add(),
                 _ => unreachable!(),
             }
+
+            self.ip += 1 + operand_width;
         }
-        todo!()
+
+        println!("{:?}", self.stack);
     }
 }
