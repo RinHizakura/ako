@@ -89,12 +89,33 @@ impl Parser {
 
     fn parse_expr_statement(&mut self) -> Result<Option<Statement>> {
         let expr = self.parse_expression()?;
-        Ok(expr.map(|e| Statement::new(e)))
+        Ok(expr.map(|e| Statement::new(StmtType::Expr, e)))
+    }
+
+    fn parse_let_statement(&mut self) -> Result<Option<Statement>> {
+        self.update_token();
+        /* Peek the next token to see if is a valid let statement */
+        if let Some(token) = &self.next_token {
+            if !matches!(token.t, TokenType::TokenIdent) {
+                return Err(anyhow!("Parser error: Invalid let statement"));
+            }
+        }
+
+        let expr = self.parse_expression()?;
+        Ok(expr.map(|e| Statement::new(StmtType::Let, e)))
     }
 
     fn parse_statement(&mut self) -> Result<Option<Statement>> {
-        // TODO: support more different statement type
-        self.parse_expr_statement()
+        /* Peek the next token */
+        if let Some(token) = &self.next_token {
+            return match token.t {
+                TokenType::TokenLet => self.parse_let_statement(),
+                _ => self.parse_expr_statement(),
+            };
+        }
+
+        // There's no token has to be parsed
+        Ok(None)
     }
 
     pub fn parse_program(&mut self, program: String) -> Result<Vec<Statement>> {

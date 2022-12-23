@@ -58,12 +58,19 @@ impl Expression {
 }
 
 #[derive(Debug)]
+pub enum StmtType {
+    Let,
+    Expr,
+}
+
+#[derive(Debug)]
 pub struct Statement {
+    pub t: StmtType,
     pub expr: Expression,
 }
 
 impl Statement {
-    pub fn new(expr: Expression) -> Self {
-        Statement { expr }
+    pub fn new(t: StmtType, expr: Expression) -> Self {
+        Statement { t, expr }
     }
 }

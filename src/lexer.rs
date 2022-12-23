@@ -35,8 +35,8 @@ impl Lexer {
             }
         }
 
-        // TODO: check specific keyword for the ident
-        match s {
+        match &s[..] {
+            "let" => Some(Token::keyword_let()),
             _ => Some(Token::ident(s)),
         }
     }

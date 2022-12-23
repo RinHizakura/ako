@@ -6,6 +6,7 @@ pub enum TokenType {
     TokenSlash,
     TokenAssign,
     TokenEq,
+    TokenLet,
     TokenInt,
     TokenIdent,
     TokenUnknown,
@@ -71,6 +72,13 @@ impl Token {
         Token {
             t: TokenType::TokenIdent,
             literal: n,
+        }
+    }
+
+    pub fn keyword_let() -> Self {
+        Token {
+            t: TokenType::TokenLet,
+            literal: "let".to_string(),
         }
     }
 
