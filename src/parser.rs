@@ -53,6 +53,7 @@ impl Parser {
         if let Some(token) = &self.cur_token {
             left = match token.t {
                 TokenType::TokenInt => Some(Expression::int(Self::token_int(token))),
+                TokenType::TokenIdent => Some(Expression::ident(token.literal.clone())),
                 _ => return Err(anyhow!("Parser error: unexpected token in the expression")),
             };
         }
@@ -62,6 +63,19 @@ impl Parser {
         let cur_token = self.cur_token.clone();
         if let Some(token) = cur_token {
             left = match token.t {
+                TokenType::TokenAssign => {
+                    match left.as_ref().unwrap() {
+                        Expression::Ident(_) => (),
+                        _ => {
+                            return Err(anyhow!(
+                                "Parser error: Invalid left expression of assign operator"
+                            ))
+                        }
+                    };
+
+                    let right = self.parse_expression()?;
+                    Some(Expression::assign(left, right))
+                }
                 TokenType::TokenPlus => {
                     let right = self.parse_expression()?;
                     Some(Expression::infix(Self::token_op(&token), left, right))

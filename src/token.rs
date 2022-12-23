@@ -4,7 +4,10 @@ pub enum TokenType {
     TokenMinus,
     TokenAsterisk,
     TokenSlash,
+    TokenAssign,
+    TokenEq,
     TokenInt,
+    TokenIdent,
     TokenUnknown,
 }
 
@@ -43,9 +46,30 @@ impl Token {
         }
     }
 
+    pub fn eq() -> Self {
+        Token {
+            t: TokenType::TokenEq,
+            literal: "==".to_string(),
+        }
+    }
+
+    pub fn assign() -> Self {
+        Token {
+            t: TokenType::TokenAssign,
+            literal: "=".to_string(),
+        }
+    }
+
     pub fn int(n: String) -> Self {
         Token {
             t: TokenType::TokenInt,
+            literal: n,
+        }
+    }
+
+    pub fn ident(n: String) -> Self {
+        Token {
+            t: TokenType::TokenIdent,
             literal: n,
         }
     }

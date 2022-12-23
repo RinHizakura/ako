@@ -25,13 +25,9 @@ impl Lexer {
         Some(Token::int(s))
     }
 
-    fn check_keyword(s: &String) {
-        todo!()
-    }
-
     fn gettoken_ident(&mut self, mut s: String) -> Option<Token> {
         while let Some(next_ch) = self.program.chars().nth(self.pos) {
-            if next_ch.is_ascii_alphabetic() {
+            if next_ch.is_ascii_alphanumeric() {
                 s.push(next_ch);
                 self.pos += 1;
             } else {
@@ -39,9 +35,10 @@ impl Lexer {
             }
         }
 
-        Self::check_keyword(&s);
-
-        None
+        // TODO: check specific keyword for the ident
+        match s {
+            _ => Some(Token::ident(s)),
+        }
     }
 
     pub fn gettoken(&mut self) -> Option<Token> {
@@ -54,6 +51,16 @@ impl Lexer {
                 '-' => Some(Token::minus()),
                 '*' => Some(Token::asterisk()),
                 '/' => Some(Token::slash()),
+                '=' => {
+                    if let Some(ch_next) = self.program.chars().nth(self.pos) {
+                        if ch_next == '=' {
+                            self.pos += 1;
+                            return Some(Token::eq());
+                        }
+                    }
+
+                    Some(Token::assign())
+                }
                 _ => {
                     if ch.is_ascii_digit() {
                         self.gettoken_int(ch.to_string())

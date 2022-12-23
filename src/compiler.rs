@@ -44,6 +44,13 @@ impl Compiler {
         Ok(())
     }
 
+    fn compile_assign_expr(&mut self, assign: AssignExpression) -> Result<()> {
+        /* Note: We had make sure the target is an ident expression at parser. */
+        todo!();
+
+        Ok(())
+    }
+
     fn compile_int_expr(&mut self, i: i32) -> Result<()> {
         // The operand will be constant value itself
         self.emit(OPCODE_CONST, &[i]);
@@ -54,6 +61,8 @@ impl Compiler {
         match expr {
             Expression::Int(i) => self.compile_int_expr(i),
             Expression::Infix(infix) => self.compile_infix_expr(infix),
+            Expression::Ident(i) => todo!(),
+            Expression::Assign(assign) => self.compile_assign_expr(assign),
         }
     }
 
