@@ -7,6 +7,9 @@ mod symtab;
 mod token;
 mod vm;
 
+#[macro_use]
+mod macros;
+
 use crate::compiler::Compiler;
 use crate::parser::Parser;
 use crate::vm::Vm;

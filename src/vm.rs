@@ -1,18 +1,9 @@
+use crate::cast;
 use crate::opcode::*;
 
 pub struct Vm {
     ip: usize,
     stack: Vec<Object>,
-}
-
-macro_rules! cast {
-    ($target: expr, $pat: path) => {{
-        if let $pat(a) = $target {
-            a
-        } else {
-            panic!("mismatch variant when cast to {}", stringify!($pat));
-        }
-    }};
 }
 
 #[derive(Debug)]

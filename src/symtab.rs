@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-struct Symbol {
+pub struct Symbol {
     name: String,
 }
 
@@ -18,7 +18,16 @@ impl Symtab {
         self.map.clear();
     }
 
-    pub fn define_var(&mut self) {
+    pub fn resolve(&self, name: &String) -> Option<&Symbol> {
+        self.map.get(name)
+    }
+
+    pub fn define_var(&mut self, name: String) -> Option<&Symbol> {
+        if let Some(sym) = self.resolve(&name) {
+            return Some(sym);
+        }
+
         todo!();
+        None
     }
 }

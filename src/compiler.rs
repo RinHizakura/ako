@@ -1,3 +1,4 @@
+use crate::cast;
 use crate::opcode::*;
 use crate::stmt::*;
 use crate::symtab::Symtab;
@@ -6,6 +7,10 @@ use anyhow::{anyhow, Result};
 pub struct Compiler {
     bytecode: Option<Vec<u8>>,
     symtab: Symtab,
+    /* If this flag is set when compiling the assign expression,
+     * it means this is a let statement which allow new symbol
+     * defined in symbol table. */
+    let_flag: bool,
 }
 
 impl Compiler {
@@ -13,6 +18,7 @@ impl Compiler {
         Compiler {
             bytecode: None,
             symtab: Symtab::new(),
+            let_flag: false,
         }
     }
 
@@ -51,8 +57,24 @@ impl Compiler {
 
     fn compile_assign_expr(&mut self, assign: AssignExpression) -> Result<()> {
         /* Note: We had make sure the target is an ident expression at parser. */
+        let name;
+        if let Some(target) = assign.target {
+            name = cast!(*target, Expression::Ident);
+        } else {
+            // This should never happen if we implement everything right
+            panic!("Try to compile an invalid assign expression");
+        }
+
+        let s;
+        if self.let_flag == true {
+            s = self.symtab.define_var(name);
+        } else {
+            s = self.symtab.resolve(&name);
+        }
         todo!();
 
+        // Reset the flag to default value
+        self.let_flag = false;
         Ok(())
     }
 
@@ -75,9 +97,8 @@ impl Compiler {
         // TODO: support more different statement type
         match stmt.t {
             StmtType::Let => {
-                let s = self.symtab.define_var();
-                todo!();
-                Ok(())
+                self.let_flag = true;
+                self.compile_expr(stmt.expr)
             }
             StmtType::Expr => self.compile_expr(stmt.expr),
         }
