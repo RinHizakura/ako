@@ -1,14 +1,19 @@
 use crate::opcode::*;
 use crate::stmt::*;
+use crate::symtab::Symtab;
 use anyhow::{anyhow, Result};
 
 pub struct Compiler {
     bytecode: Option<Vec<u8>>,
+    symtab: Symtab,
 }
 
 impl Compiler {
     pub fn new() -> Self {
-        Compiler { bytecode: None }
+        Compiler {
+            bytecode: None,
+            symtab: Symtab::new(),
+        }
     }
 
     fn emit(&mut self, opcode: u8, operands: &[i32]) {
@@ -68,11 +73,20 @@ impl Compiler {
 
     fn compile_statement(&mut self, stmt: Statement) -> Result<()> {
         // TODO: support more different statement type
-        self.compile_expr(stmt.expr)
+        match stmt.t {
+            StmtType::Let => {
+                let s = self.symtab.define_var();
+                todo!();
+                Ok(())
+            }
+            StmtType::Expr => self.compile_expr(stmt.expr),
+        }
     }
 
     pub fn compile(&mut self, stmts: Vec<Statement>) -> Result<Vec<u8>> {
         self.bytecode = Some(vec![]);
+        self.symtab.reset();
+
         for stmt in stmts {
             self.compile_statement(stmt)?;
         }

@@ -3,6 +3,7 @@ mod lexer;
 mod opcode;
 mod parser;
 mod stmt;
+mod symtab;
 mod token;
 mod vm;
 
