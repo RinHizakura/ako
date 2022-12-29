@@ -56,6 +56,10 @@ impl Compiler {
     }
 
     fn compile_assign_expr(&mut self, assign: AssignExpression) -> Result<()> {
+        if let Some(value) = assign.value {
+            self.compile_expr(*value)?;
+        }
+
         /* Note: We had make sure the target is an ident expression at parser. */
         let name;
         if let Some(target) = assign.target {
@@ -71,10 +75,13 @@ impl Compiler {
         } else {
             s = self.symtab.resolve(&name);
         }
-        todo!();
-
         // Reset the flag to default value
         self.let_flag = false;
+
+        // TODO: Support both global and local variables
+        let idx = s.unwrap().index as u32 as i32;
+        self.emit(OPCODE_SET_LOCAL, &[idx]);
+
         Ok(())
     }
 

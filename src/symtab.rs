@@ -1,18 +1,16 @@
 use std::collections::HashMap;
 pub struct Symbol {
-    index: usize,
+    pub index: u16,
 }
 
 impl Symbol {
-    pub fn new(index: usize) -> Self {
-        Symbol {
-            index,
-        }
+    pub fn new(index: u16) -> Self {
+        Symbol { index }
     }
 }
 
 pub struct Symtab {
-    next_index: usize,
+    next_index: u16,
     map: HashMap<String, Symbol>,
 }
 

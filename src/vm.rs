@@ -59,6 +59,7 @@ impl Vm {
             match opcode {
                 OPCODE_CONST => self.do_const(&bytecode),
                 OPCODE_ADD => self.do_add(),
+                OPCODE_SET_LOCAL => todo!(),
                 _ => unreachable!(),
             }
 
