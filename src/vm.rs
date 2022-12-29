@@ -24,12 +24,17 @@ impl Vm {
         self.ip = 0;
     }
 
-    fn do_const(&mut self, bytecode: &Vec<u8>) {
-        let operand_width = operand_width(OPCODE_CONST);
+    fn get_operand(&self, bytecode: &Vec<u8>, opcode: u8) -> i32 {
+        let operand_width = operand_width(opcode);
         let mut value = 0;
         for i in 0..operand_width {
             value |= (bytecode[self.ip + 1 + i] as i32) << (8 * i);
         }
+        value
+    }
+
+    fn do_const(&mut self, bytecode: &Vec<u8>) {
+        let value = self.get_operand(bytecode, OPCODE_CONST);
         self.stack.push(Object::I(value));
     }
 
@@ -48,6 +53,11 @@ impl Vm {
         self.stack.push(Object::I(left + right));
     }
 
+    fn do_set_local(&mut self, bytecode: &Vec<u8>) {
+        let index = self.get_operand(bytecode, OPCODE_SET_LOCAL) as u32 as usize;
+        todo!();
+    }
+
     pub fn run(&mut self, bytecode: Vec<u8>) {
         let len = bytecode.len();
         self.reset();
@@ -59,7 +69,7 @@ impl Vm {
             match opcode {
                 OPCODE_CONST => self.do_const(&bytecode),
                 OPCODE_ADD => self.do_add(),
-                OPCODE_SET_LOCAL => todo!(),
+                OPCODE_SET_LOCAL => self.do_set_local(&bytecode),
                 _ => unreachable!(),
             }
 
