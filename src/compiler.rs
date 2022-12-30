@@ -80,7 +80,7 @@ impl Compiler {
 
         // TODO: Support both global and local variables
         let idx = s.unwrap().index as u32 as i32;
-        self.emit(OPCODE_SET_LOCAL, &[idx]);
+        self.emit(OPCODE_SET_GLOBAL, &[idx]);
 
         Ok(())
     }

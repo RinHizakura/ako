@@ -31,13 +31,21 @@ impl StackFrame {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.stack_ptr = 0;
+    }
+
     pub fn resize(&mut self) {
         assert!(self.cap < (1 << 31));
         self.cap = self.cap << 1;
+        /* FIXME: Will this cost too much with clone behind the function? */
         self.mem.resize(self.cap, None);
     }
 
     pub fn push_stack(&mut self, obj: Object) {
+        if self.stack_ptr >= self.cap {
+            self.resize();
+        }
         self.mem[self.stack_ptr] = Some(obj);
         self.stack_ptr += 1;
     }
@@ -51,7 +59,8 @@ impl StackFrame {
 
 pub struct Vm {
     ip: usize,
-    mem: StackFrame,
+    stack_frame: StackFrame,
+    globals: Vec<Object>,
 }
 
 #[derive(Debug, Clone)]
@@ -64,12 +73,15 @@ impl Vm {
     pub fn new() -> Self {
         Vm {
             ip: 0,
-            mem: StackFrame::new(),
+            stack_frame: StackFrame::new(),
+            globals: Vec::new(),
         }
     }
 
     pub fn reset(&mut self) {
         self.ip = 0;
+        self.stack_frame.reset();
+        self.globals.clear();
     }
 
     fn get_operand(&self, bytecode: &Vec<u8>, opcode: u8) -> i32 {
@@ -83,21 +95,26 @@ impl Vm {
 
     fn do_const(&mut self, bytecode: &Vec<u8>) {
         let value = self.get_operand(bytecode, OPCODE_CONST);
-        self.mem.push_stack(Object::I(value));
+        self.stack_frame.push_stack(Object::I(value));
     }
 
     fn do_add(&mut self) {
-        let right = self.mem.pop_stack();
-        let left = self.mem.pop_stack();
+        let right = self.stack_frame.pop_stack();
+        let left = self.stack_frame.pop_stack();
 
         let right = cast!(right, Object::I);
         let left = cast!(left, Object::I);
-        self.mem.push_stack(Object::I(left + right));
+        self.stack_frame.push_stack(Object::I(left + right));
     }
 
     fn do_set_local(&mut self, bytecode: &Vec<u8>) {
-        let index = self.get_operand(bytecode, OPCODE_SET_LOCAL) as u32 as usize;
         todo!();
+    }
+
+    fn do_set_global(&mut self, bytecode: &Vec<u8>) {
+        let operand_width = operand_width(OPCODE_SET_GLOBAL);
+        let value = self.stack_frame.pop_stack();
+        self.globals.push(value);
     }
 
     pub fn run(&mut self, bytecode: Vec<u8>) {
@@ -112,12 +129,14 @@ impl Vm {
                 OPCODE_CONST => self.do_const(&bytecode),
                 OPCODE_ADD => self.do_add(),
                 OPCODE_SET_LOCAL => self.do_set_local(&bytecode),
+                OPCODE_SET_GLOBAL => self.do_set_global(&bytecode),
                 _ => unreachable!(),
             }
 
             self.ip += 1 + operand_width;
         }
 
-        println!("{:?}", self.mem);
+        println!("{:?}", self.stack_frame);
+        println!("{:?}", self.globals);
     }
 }
