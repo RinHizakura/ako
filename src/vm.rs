@@ -1,12 +1,60 @@
 use crate::cast;
 use crate::opcode::*;
+use std::fmt;
+
+struct StackFrame {
+    mem: Vec<Option<Object>>,
+    cap: usize,
+    stack_ptr: usize,
+}
+
+impl fmt::Debug for StackFrame {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        /* TODO: maybe reimplement this to prettier format */
+        write!(f, "StackFrame [");
+        for i in 0..self.stack_ptr {
+            write!(f, "{:?}, ", self.mem[i]);
+        }
+        write!(f, "]")
+    }
+}
+
+impl StackFrame {
+    pub fn new() -> Self {
+        let cap = 128;
+        let mut vec = Vec::with_capacity(cap);
+        unsafe { vec.set_len(cap) }
+        StackFrame {
+            mem: vec,
+            cap: cap,
+            stack_ptr: 0,
+        }
+    }
+
+    pub fn resize(&mut self) {
+        assert!(self.cap < (1 << 31));
+        self.cap = self.cap << 1;
+        self.mem.resize(self.cap, None);
+    }
+
+    pub fn push_stack(&mut self, obj: Object) {
+        self.mem[self.stack_ptr] = Some(obj);
+        self.stack_ptr += 1;
+    }
+
+    pub fn pop_stack(&mut self) -> Object {
+        let obj = self.mem[self.stack_ptr - 1].take();
+        self.stack_ptr -= 1;
+        obj.expect("Fail to pop out object from the stack frame")
+    }
+}
 
 pub struct Vm {
     ip: usize,
-    stack: Vec<Object>,
+    mem: StackFrame,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Object {
     I(i32),
     Bool(bool),
@@ -16,7 +64,7 @@ impl Vm {
     pub fn new() -> Self {
         Vm {
             ip: 0,
-            stack: Vec::new(),
+            mem: StackFrame::new(),
         }
     }
 
@@ -35,22 +83,16 @@ impl Vm {
 
     fn do_const(&mut self, bytecode: &Vec<u8>) {
         let value = self.get_operand(bytecode, OPCODE_CONST);
-        self.stack.push(Object::I(value));
+        self.mem.push_stack(Object::I(value));
     }
 
     fn do_add(&mut self) {
-        let right = self
-            .stack
-            .pop()
-            .expect("Fail to pop right operand from stack");
-        let left = self
-            .stack
-            .pop()
-            .expect("Fail to pop left operand from stack");
+        let right = self.mem.pop_stack();
+        let left = self.mem.pop_stack();
 
         let right = cast!(right, Object::I);
         let left = cast!(left, Object::I);
-        self.stack.push(Object::I(left + right));
+        self.mem.push_stack(Object::I(left + right));
     }
 
     fn do_set_local(&mut self, bytecode: &Vec<u8>) {
@@ -76,6 +118,6 @@ impl Vm {
             self.ip += 1 + operand_width;
         }
 
-        println!("{:?}", self.stack);
+        println!("{:?}", self.mem);
     }
 }
