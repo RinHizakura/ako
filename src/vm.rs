@@ -11,9 +11,9 @@ struct StackFrame {
 impl fmt::Debug for StackFrame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         /* TODO: maybe reimplement this to prettier format */
-        write!(f, "StackFrame [");
+        write!(f, "StackFrame [")?;
         for i in 0..self.stack_ptr {
-            write!(f, "{:?}, ", self.mem[i]);
+            write!(f, "{:?}, ", self.mem[i])?;
         }
         write!(f, "]")
     }
