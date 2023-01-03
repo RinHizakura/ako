@@ -54,7 +54,12 @@ impl Parser {
             left = match token.t {
                 TokenType::TokenInt => Some(Expression::int(Self::token_int(token))),
                 TokenType::TokenIdent => Some(Expression::ident(token.literal.clone())),
-                _ => return Err(anyhow!("Parser error: unexpected token in the expression")),
+                _ => {
+                    return Err(anyhow!(format!(
+                        "Parser error: unexpected token {:?} in the expression",
+                        token
+                    )))
+                }
             };
         }
 
@@ -80,7 +85,13 @@ impl Parser {
                     let right = self.parse_expression()?;
                     Some(Expression::infix(Self::token_op(&token), left, right))
                 }
-                _ => return Err(anyhow!("Parser error: unexpected token in the expression")),
+                TokenType::TokenSemiColon => left,
+                _ => {
+                    return Err(anyhow!(format!(
+                        "Parser error: unexpected token {:?} in the expression",
+                        token
+                    )))
+                }
             };
         }
 

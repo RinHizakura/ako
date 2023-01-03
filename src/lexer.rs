@@ -51,6 +51,7 @@ impl Lexer {
                 '-' => Some(Token::minus()),
                 '*' => Some(Token::asterisk()),
                 '/' => Some(Token::slash()),
+                ';' => Some(Token::semicolon()),
                 '=' => {
                     if let Some(ch_next) = self.program.chars().nth(self.pos) {
                         if ch_next == '=' {
@@ -67,7 +68,7 @@ impl Lexer {
                     } else if ch.is_ascii_alphabetic() {
                         self.gettoken_ident(ch.to_string())
                     } else {
-                        Some(Token::unknown())
+                        Some(Token::unknown(ch.to_string()))
                     }
                 }
             };

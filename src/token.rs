@@ -6,6 +6,7 @@ pub enum TokenType {
     TokenSlash,
     TokenAssign,
     TokenEq,
+    TokenSemiColon,
     TokenLet,
     TokenInt,
     TokenIdent,
@@ -47,6 +48,13 @@ impl Token {
         }
     }
 
+    pub fn assign() -> Self {
+        Token {
+            t: TokenType::TokenAssign,
+            literal: "=".to_string(),
+        }
+    }
+
     pub fn eq() -> Self {
         Token {
             t: TokenType::TokenEq,
@@ -54,10 +62,10 @@ impl Token {
         }
     }
 
-    pub fn assign() -> Self {
+    pub fn semicolon() -> Self {
         Token {
-            t: TokenType::TokenAssign,
-            literal: "=".to_string(),
+            t: TokenType::TokenSemiColon,
+            literal: ";".to_string(),
         }
     }
 
@@ -82,10 +90,10 @@ impl Token {
         }
     }
 
-    pub fn unknown() -> Self {
+    pub fn unknown(s: String) -> Self {
         Token {
             t: TokenType::TokenUnknown,
-            literal: "".to_string(),
+            literal: s,
         }
     }
 }
