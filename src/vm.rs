@@ -22,8 +22,8 @@ impl fmt::Debug for StackFrame {
 impl StackFrame {
     pub fn new() -> Self {
         let cap = 128;
-        let mut vec = Vec::with_capacity(cap);
-        unsafe { vec.set_len(cap) }
+        let mut vec = Vec::new();
+        vec.resize(cap, None);
         StackFrame {
             mem: vec,
             cap: cap,
@@ -35,16 +35,12 @@ impl StackFrame {
         self.stack_ptr = 0;
     }
 
-    pub fn resize(&mut self) {
-        assert!(self.cap < (1 << 31));
-        self.cap = self.cap << 1;
-        /* FIXME: Will this cost too much with clone behind the function? */
-        self.mem.resize(self.cap, None);
-    }
-
     pub fn push_stack(&mut self, obj: Object) {
         if self.stack_ptr >= self.cap {
-            self.resize();
+            assert!(self.cap < (1 << 31));
+            self.cap <<= 1;
+            /* FIXME: Will this cost too much with clone behind the function? */
+            self.mem.resize(self.cap, None);
         }
         self.mem[self.stack_ptr] = Some(obj);
         self.stack_ptr += 1;
@@ -60,7 +56,8 @@ impl StackFrame {
 pub struct Vm {
     ip: usize,
     stack_frame: StackFrame,
-    globals: Vec<Object>,
+    /* TODO: Maybe we can reimplement this to a specific abstraction */
+    globals: Vec<Option<Object>>,
 }
 
 #[derive(Debug, Clone)]
@@ -112,9 +109,13 @@ impl Vm {
     }
 
     fn do_set_global(&mut self, bytecode: &Vec<u8>) {
-        let operand_width = operand_width(OPCODE_SET_GLOBAL);
-        let value = self.stack_frame.pop_stack();
-        self.globals.push(value);
+        let idx = self.get_operand(bytecode, OPCODE_CONST) as usize;
+        let obj = self.stack_frame.pop_stack();
+
+        if idx > self.globals.len() {
+            self.globals.resize(idx + 1, None);
+        }
+        self.globals[idx] = Some(obj);
     }
 
     pub fn run(&mut self, bytecode: Vec<u8>) {
@@ -130,6 +131,8 @@ impl Vm {
                 OPCODE_ADD => self.do_add(),
                 OPCODE_SET_LOCAL => self.do_set_local(&bytecode),
                 OPCODE_SET_GLOBAL => self.do_set_global(&bytecode),
+                OPCODE_GET_LOCAL => todo!(),
+                OPCODE_GET_GLOBAL => todo!(),
                 _ => unreachable!(),
             }
 
