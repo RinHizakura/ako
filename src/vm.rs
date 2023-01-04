@@ -53,11 +53,43 @@ impl StackFrame {
     }
 }
 
+#[derive(Debug)]
+struct ObjectList {
+    mem: Vec<Option<Object>>,
+    cap: usize,
+}
+
+impl ObjectList {
+    pub fn new() -> Self {
+        let cap = 8;
+        let mut vec = Vec::new();
+        vec.resize(cap, None);
+        ObjectList { mem: vec, cap: cap }
+    }
+
+    pub fn reset(&mut self) {
+        self.cap = 8;
+        self.mem.clear();
+        self.mem.resize(self.cap, None);
+    }
+
+    pub fn set(&mut self, idx: usize, obj: Object) {
+        let do_resize = false;
+        if idx >= self.cap {
+            while idx >= self.cap {
+                assert!(self.cap < (1 << 31));
+                self.cap <<= 1;
+            }
+            self.mem.resize(self.cap, None);
+        }
+        self.mem[idx] = Some(obj);
+    }
+}
+
 pub struct Vm {
     ip: usize,
     stack_frame: StackFrame,
-    /* TODO: Maybe we can reimplement this to a specific abstraction */
-    globals: Vec<Option<Object>>,
+    globals: ObjectList,
 }
 
 #[derive(Debug, Clone)]
@@ -71,14 +103,14 @@ impl Vm {
         Vm {
             ip: 0,
             stack_frame: StackFrame::new(),
-            globals: Vec::new(),
+            globals: ObjectList::new(),
         }
     }
 
     pub fn reset(&mut self) {
         self.ip = 0;
         self.stack_frame.reset();
-        self.globals.clear();
+        self.globals.reset();
     }
 
     fn get_operand(&self, bytecode: &Vec<u8>, opcode: u8) -> i32 {
@@ -111,11 +143,7 @@ impl Vm {
     fn do_set_global(&mut self, bytecode: &Vec<u8>) {
         let idx = self.get_operand(bytecode, OPCODE_CONST) as usize;
         let obj = self.stack_frame.pop_stack();
-
-        if idx > self.globals.len() {
-            self.globals.resize(idx + 1, None);
-        }
-        self.globals[idx] = Some(obj);
+        self.globals.set(idx, obj);
     }
 
     pub fn run(&mut self, bytecode: Vec<u8>) {
