@@ -1,11 +1,18 @@
 use std::collections::HashMap;
+
+pub enum Scope {
+    Local,
+    Global,
+}
+
 pub struct Symbol {
     pub index: u16,
+    pub scope: Scope,
 }
 
 impl Symbol {
-    pub fn new(index: u16) -> Self {
-        Symbol { index }
+    pub fn new(index: u16, scope: Scope) -> Self {
+        Symbol { index, scope }
     }
 }
 
@@ -33,7 +40,8 @@ impl Symtab {
 
     pub fn define_var(&mut self, name: String) -> Option<&Symbol> {
         if !self.map.contains_key(&name) {
-            let sym = Symbol::new(self.next_index);
+            // TODO: Define the scope of variable correctly
+            let sym = Symbol::new(self.next_index, Scope::Global);
             self.map.insert(name.clone(), sym);
             self.next_index += 1;
         }

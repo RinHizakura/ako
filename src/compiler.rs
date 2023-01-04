@@ -1,7 +1,7 @@
 use crate::cast;
 use crate::opcode::*;
 use crate::stmt::*;
-use crate::symtab::Symtab;
+use crate::symtab::{Scope, Symtab};
 use anyhow::{anyhow, Result};
 
 pub struct Compiler {
@@ -33,6 +33,30 @@ impl Compiler {
                 }
             }
         }
+    }
+
+    fn compile_int_expr(&mut self, i: i32) -> Result<()> {
+        // The operand will be constant value itself
+        self.emit(OPCODE_CONST, &[i]);
+        Ok(())
+    }
+
+    fn compile_ident_expr(&mut self, ident: String) -> Result<()> {
+        let symbol = self.symtab.resolve(&ident);
+
+        if symbol.is_none() {
+            return Err(anyhow!(format!("Compiler error: unresolved symbol {}", ident)))
+        }
+
+        let symbol = symbol.unwrap();
+        let idx = symbol.index as u32 as i32;
+
+        match symbol.scope {
+            Scope::Local => todo!(),
+            Scope::Global => self.emit(OPCODE_GET_GLOBAL, &[idx]),
+        }
+
+        Ok(())
     }
 
     fn compile_infix_expr(&mut self, infix: InfixExpression) -> Result<()> {
@@ -85,17 +109,11 @@ impl Compiler {
         Ok(())
     }
 
-    fn compile_int_expr(&mut self, i: i32) -> Result<()> {
-        // The operand will be constant value itself
-        self.emit(OPCODE_CONST, &[i]);
-        Ok(())
-    }
-
     fn compile_expr(&mut self, expr: Expression) -> Result<()> {
         match expr {
             Expression::Int(i) => self.compile_int_expr(i),
+            Expression::Ident(i) => self.compile_ident_expr(i),
             Expression::Infix(infix) => self.compile_infix_expr(infix),
-            Expression::Ident(i) => todo!(),
             Expression::Assign(assign) => self.compile_assign_expr(assign),
         }
     }
