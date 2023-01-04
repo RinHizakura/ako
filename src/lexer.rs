@@ -45,8 +45,12 @@ impl Lexer {
         if let Some(ch) = self.program.chars().nth(self.pos) {
             self.pos += 1;
 
+            // skip the space
+            if ch.is_whitespace() {
+                return self.gettoken();
+            }
+
             return match ch {
-                ' ' => self.gettoken(), // skip the space
                 '+' => Some(Token::plus()),
                 '-' => Some(Token::minus()),
                 '*' => Some(Token::asterisk()),
