@@ -45,7 +45,10 @@ impl Compiler {
         let symbol = self.symtab.resolve(&ident);
 
         if symbol.is_none() {
-            return Err(anyhow!(format!("Compiler error: unresolved symbol {}", ident)))
+            return Err(anyhow!(format!(
+                "Compiler error: unresolved symbol {}",
+                ident
+            )));
         }
 
         let symbol = symbol.unwrap();
