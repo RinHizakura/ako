@@ -74,7 +74,6 @@ impl ObjectList {
     }
 
     pub fn set(&mut self, idx: usize, obj: Object) {
-        let do_resize = false;
         if idx >= self.cap {
             while idx >= self.cap {
                 assert!(self.cap < (1 << 31));
@@ -83,6 +82,10 @@ impl ObjectList {
             self.mem.resize(self.cap, None);
         }
         self.mem[idx] = Some(obj);
+    }
+
+    pub fn get(&mut self, idx: usize) -> Object {
+        self.mem[idx].as_ref().unwrap().clone()
     }
 }
 
@@ -146,6 +149,12 @@ impl Vm {
         self.globals.set(idx, obj);
     }
 
+    fn do_get_global(&mut self, bytecode: &Vec<u8>) {
+        let idx = self.get_operand(bytecode, OPCODE_GET_GLOBAL) as usize;
+        let obj = self.globals.get(idx);
+        self.stack_frame.push_stack(obj);
+    }
+
     pub fn run(&mut self, bytecode: Vec<u8>) {
         let len = bytecode.len();
         self.reset();
@@ -160,7 +169,7 @@ impl Vm {
                 OPCODE_SET_LOCAL => self.do_set_local(&bytecode),
                 OPCODE_SET_GLOBAL => self.do_set_global(&bytecode),
                 OPCODE_GET_LOCAL => todo!(),
-                OPCODE_GET_GLOBAL => todo!(),
+                OPCODE_GET_GLOBAL => self.do_get_global(&bytecode),
                 _ => unreachable!(),
             }
 
