@@ -22,6 +22,12 @@ impl Compiler {
         }
     }
 
+    fn reset(&mut self) {
+        self.bytecode = Some(vec![]);
+        self.symtab.reset();
+        self.let_flag = false;
+    }
+
     fn emit(&mut self, opcode: u8, operands: &[i32]) {
         let operand_width = operand_width(opcode);
 
@@ -133,8 +139,7 @@ impl Compiler {
     }
 
     pub fn compile(&mut self, stmts: Vec<Statement>) -> Result<Vec<u8>> {
-        self.bytecode = Some(vec![]);
-        self.symtab.reset();
+        self.reset();
 
         for stmt in stmts {
             self.compile_statement(stmt)?;
