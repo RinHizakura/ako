@@ -141,7 +141,7 @@ impl Vm {
     }
 
     fn do_set_global(&mut self, bytecode: &Vec<u8>) {
-        let idx = self.get_operand(bytecode, OPCODE_CONST) as usize;
+        let idx = self.get_operand(bytecode, OPCODE_SET_GLOBAL) as usize;
         let obj = self.stack_frame.pop_stack();
         self.globals.set(idx, obj);
     }

@@ -2,12 +2,11 @@ use ako::Ako;
 
 fn main() {
     // TODO: read file as the input program
-    let program = "let a = 1;\n \
-                   let b = a + a;"
+    let program = "let a = 1"
         .to_string();
 
     let mut ako = Ako::new(program);
-    let err = ako.compile();
+    let err = ako.compile_and_run();
     if err.is_err() {
         println!("Syntax error for the input {:?}", err);
     }
