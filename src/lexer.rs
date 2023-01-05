@@ -51,10 +51,14 @@ impl Lexer {
             }
 
             return match ch {
+                '&' => Some(Token::and()),
+                '|' => Some(Token::or()),
+                '^' => Some(Token::xor()),
                 '+' => Some(Token::plus()),
                 '-' => Some(Token::minus()),
                 '*' => Some(Token::asterisk()),
                 '/' => Some(Token::slash()),
+                '%' => Some(Token::percent()),
                 ';' => Some(Token::semicolon()),
                 '=' => {
                     if let Some(ch_next) = self.program.chars().nth(self.pos) {

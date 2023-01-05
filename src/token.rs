@@ -1,9 +1,13 @@
 #[derive(Debug, Clone)]
 pub enum TokenType {
+    TokenAnd,
+    TokenOr,
+    TokenXor,
     TokenPlus,
     TokenMinus,
     TokenAsterisk,
     TokenSlash,
+    TokenPercent,
     TokenAssign,
     TokenEq,
     TokenSemiColon,
@@ -20,6 +24,27 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn and() -> Self {
+        Token {
+            t: TokenType::TokenAnd,
+            literal: "&".to_string(),
+        }
+    }
+
+    pub fn or() -> Self {
+        Token {
+            t: TokenType::TokenPlus,
+            literal: "|".to_string(),
+        }
+    }
+
+    pub fn xor() -> Self {
+        Token {
+            t: TokenType::TokenPlus,
+            literal: "^".to_string(),
+        }
+    }
+
     pub fn plus() -> Self {
         Token {
             t: TokenType::TokenPlus,
@@ -45,6 +70,13 @@ impl Token {
         Token {
             t: TokenType::TokenSlash,
             literal: "/".to_string(),
+        }
+    }
+
+    pub fn percent() -> Self {
+        Token {
+            t: TokenType::TokenPercent,
+            literal: "%".to_string(),
         }
     }
 

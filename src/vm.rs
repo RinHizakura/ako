@@ -130,13 +130,26 @@ impl Vm {
         self.stack_frame.push_stack(Object::I(value));
     }
 
-    fn do_add(&mut self) {
+    fn do_binary_op(&mut self, opcode: u8) {
         let right = self.stack_frame.pop_stack();
         let left = self.stack_frame.pop_stack();
 
         let right = cast!(right, Object::I);
         let left = cast!(left, Object::I);
-        self.stack_frame.push_stack(Object::I(left + right));
+
+        let i;
+        match opcode {
+            OPCODE_AND => i = left & right,
+            OPCODE_OR => i = left | right,
+            OPCODE_XOR => i = left ^ right,
+            OPCODE_ADD => i = left + right,
+            OPCODE_SUB => i = left - right,
+            OPCODE_MUL => i = left * right,
+            OPCODE_DIV => i = left / right,
+            OPCODE_MODULO => i = left % right,
+            _ => unreachable!(),
+        }
+        self.stack_frame.push_stack(Object::I(i));
     }
 
     fn do_set_local(&mut self, bytecode: &Vec<u8>) {
@@ -165,7 +178,8 @@ impl Vm {
 
             match opcode {
                 OPCODE_CONST => self.do_const(&bytecode),
-                OPCODE_ADD => self.do_add(),
+                OPCODE_AND | OPCODE_OR | OPCODE_XOR | OPCODE_ADD | OPCODE_SUB | OPCODE_MUL
+                | OPCODE_DIV | OPCODE_MODULO => self.do_binary_op(opcode),
                 OPCODE_SET_LOCAL => self.do_set_local(&bytecode),
                 OPCODE_SET_GLOBAL => self.do_set_global(&bytecode),
                 OPCODE_GET_LOCAL => todo!(),

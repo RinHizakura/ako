@@ -1,9 +1,13 @@
 #[derive(Debug)]
 pub enum OpType {
+    OpAnd,
+    OpOr,
+    OpXor,
     OpAdd,
-    OpSubtract,
+    OpSub,
     OpMul,
     OpDiv,
+    OpModulo,
     OpUnknown,
 }
 

@@ -20,10 +20,14 @@ impl Parser {
 
     fn token_op(token: &Token) -> OpType {
         match token.t {
+            TokenType::TokenAnd => OpType::OpAnd,
+            TokenType::TokenOr => OpType::OpOr,
+            TokenType::TokenXor => OpType::OpXor,
             TokenType::TokenPlus => OpType::OpAdd,
-            TokenType::TokenMinus => OpType::OpSubtract,
+            TokenType::TokenMinus => OpType::OpSub,
             TokenType::TokenAsterisk => OpType::OpMul,
             TokenType::TokenSlash => OpType::OpDiv,
+            TokenType::TokenPercent => OpType::OpModulo,
             _ => OpType::OpUnknown,
         }
     }
@@ -81,7 +85,14 @@ impl Parser {
                     let right = self.parse_expression()?;
                     Some(Expression::assign(left, right))
                 }
-                TokenType::TokenPlus => {
+                TokenType::TokenAnd
+                | TokenType::TokenOr
+                | TokenType::TokenXor
+                | TokenType::TokenPlus
+                | TokenType::TokenMinus
+                | TokenType::TokenAsterisk
+                | TokenType::TokenSlash
+                | TokenType::TokenPercent => {
                     let right = self.parse_expression()?;
                     Some(Expression::infix(Self::token_op(&token), left, right))
                 }

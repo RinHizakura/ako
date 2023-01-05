@@ -77,7 +77,14 @@ impl Compiler {
         }
 
         match infix.op {
+            OpType::OpAnd => self.emit(OPCODE_AND, &[]),
+            OpType::OpOr => self.emit(OPCODE_OR, &[]),
+            OpType::OpXor => self.emit(OPCODE_XOR, &[]),
             OpType::OpAdd => self.emit(OPCODE_ADD, &[]),
+            OpType::OpSub => self.emit(OPCODE_SUB, &[]),
+            OpType::OpMul => self.emit(OPCODE_MUL, &[]),
+            OpType::OpDiv => self.emit(OPCODE_DIV, &[]),
+            OpType::OpModulo => self.emit(OPCODE_MODULO, &[]),
             _ => {
                 return Err(anyhow!(
                     "Compile error: Unknown operator in the infix expression"
