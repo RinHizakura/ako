@@ -33,14 +33,14 @@ impl Token {
 
     pub fn or() -> Self {
         Token {
-            t: TokenType::TokenPlus,
+            t: TokenType::TokenOr,
             literal: "|".to_string(),
         }
     }
 
     pub fn xor() -> Self {
         Token {
-            t: TokenType::TokenPlus,
+            t: TokenType::TokenXor,
             literal: "^".to_string(),
         }
     }
