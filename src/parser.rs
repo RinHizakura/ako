@@ -3,6 +3,21 @@ use crate::stmt::*;
 use crate::token::{Token, TokenType};
 use anyhow::{anyhow, Result};
 
+const PRECEDENCE_LOWEST: i8 = -1;
+pub fn get_token_precedence(token_type: &TokenType) -> i8 {
+    /* FIXME: Consider if a token could represent two different
+     * operation(e.g. '+' can be used for unary plus or addition) */
+    match token_type {
+        TokenType::TokenAssign => 1,
+        TokenType::TokenOr => 2,
+        TokenType::TokenXor => 3,
+        TokenType::TokenAnd => 4,
+        TokenType::TokenPlus | TokenType::TokenMinus => 5,
+        TokenType::TokenAsterisk | TokenType::TokenSlash | TokenType::TokenPercent => 6,
+        _ => PRECEDENCE_LOWEST,
+    }
+}
+
 pub struct Parser {
     lexer: Option<Lexer>,
     cur_token: Option<Token>,
@@ -51,11 +66,12 @@ impl Parser {
         self.next_token = self.lexer.as_mut().unwrap().gettoken();
     }
 
-    fn parse_expression(&mut self) -> Result<Option<Expression>> {
+    fn parse_expression(&mut self, precedence: i8) -> Result<Option<Expression>> {
         let mut left = None;
         self.update_token();
         if let Some(token) = &self.cur_token {
-            left = match token.t {
+            let token_type = &token.t;
+            left = match token_type {
                 TokenType::TokenInt => Some(Expression::int(Self::token_int(token))),
                 TokenType::TokenIdent => Some(Expression::ident(token.literal.clone())),
                 _ => {
@@ -67,50 +83,56 @@ impl Parser {
             };
         }
 
-        self.update_token();
-        // FIXME: Clone for ownership model, any better approach?
-        let cur_token = self.cur_token.clone();
-        if let Some(token) = cur_token {
-            left = match token.t {
-                TokenType::TokenAssign => {
-                    match left.as_ref().unwrap() {
-                        Expression::Ident(_) => (),
-                        _ => {
+        while let Some(next_token) = &self.next_token {
+            /* If the next token has lower precedence, the 'left' which we had
+             * gotten previously should belong to the left sub-expression. */
+            if get_token_precedence(&next_token.t) < precedence {
+                break;
+            }
+
+            self.update_token();
+            // FIXME: Clone for ownership model, any better approach?
+            let cur_token = self.cur_token.clone();
+            if let Some(token) = cur_token {
+                let token_type = &token.t;
+                left = match token_type {
+                    TokenType::TokenAssign => {
+                        if !matches!(left.as_ref().unwrap(), Expression::Ident(_)) {
                             return Err(anyhow!(
                                 "Parser error: Invalid left expression of assign operator"
-                            ))
+                            ));
                         }
-                    };
 
-                    let right = self.parse_expression()?;
-                    Some(Expression::assign(left, right))
-                }
-                TokenType::TokenAnd
-                | TokenType::TokenOr
-                | TokenType::TokenXor
-                | TokenType::TokenPlus
-                | TokenType::TokenMinus
-                | TokenType::TokenAsterisk
-                | TokenType::TokenSlash
-                | TokenType::TokenPercent => {
-                    let right = self.parse_expression()?;
-                    Some(Expression::infix(Self::token_op(&token), left, right))
-                }
-                TokenType::TokenSemiColon => left,
-                _ => {
-                    return Err(anyhow!(format!(
-                        "Parser error: unexpected token {:?} in the expression",
-                        token
-                    )))
-                }
-            };
+                        let right = self.parse_expression(get_token_precedence(token_type))?;
+                        Some(Expression::assign(left, right))
+                    }
+                    TokenType::TokenAnd
+                    | TokenType::TokenOr
+                    | TokenType::TokenXor
+                    | TokenType::TokenPlus
+                    | TokenType::TokenMinus
+                    | TokenType::TokenAsterisk
+                    | TokenType::TokenSlash
+                    | TokenType::TokenPercent => {
+                        let right = self.parse_expression(get_token_precedence(token_type))?;
+                        Some(Expression::infix(Self::token_op(&token), left, right))
+                    }
+                    TokenType::TokenSemiColon => left,
+                    _ => {
+                        return Err(anyhow!(format!(
+                            "Parser error: unexpected token {:?} in the expression",
+                            token
+                        )))
+                    }
+                };
+            }
         }
 
         Ok(left)
     }
 
     fn parse_expr_statement(&mut self) -> Result<Option<Statement>> {
-        let expr = self.parse_expression()?;
+        let expr = self.parse_expression(PRECEDENCE_LOWEST)?;
         Ok(expr.map(|e| Statement::new(StmtType::Expr, e)))
     }
 
@@ -123,7 +145,7 @@ impl Parser {
             }
         }
 
-        let expr = self.parse_expression()?;
+        let expr = self.parse_expression(PRECEDENCE_LOWEST)?;
         Ok(expr.map(|e| Statement::new(StmtType::Let, e)))
     }
 
