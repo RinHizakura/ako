@@ -131,6 +131,7 @@ impl Compiler {
             Expression::Ident(i) => self.compile_ident_expr(i),
             Expression::Infix(infix) => self.compile_infix_expr(infix),
             Expression::Assign(assign) => self.compile_assign_expr(assign),
+            Expression::Call(call) => todo!(),
         }
     }
 

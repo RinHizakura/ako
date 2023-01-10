@@ -25,11 +25,18 @@ pub struct AssignExpression {
 }
 
 #[derive(Debug)]
+pub struct CallExpression {
+    pub function: Option<Box<Expression>>,
+    pub args: Vec<Option<Expression>>,
+}
+
+#[derive(Debug)]
 pub enum Expression {
     Int(i32),
     Ident(String),
     Infix(InfixExpression),
     Assign(AssignExpression),
+    Call(CallExpression),
 }
 
 impl Expression {
@@ -57,6 +64,14 @@ impl Expression {
         Expression::Assign(AssignExpression {
             target: target,
             value: value,
+        })
+    }
+
+    pub fn call(function: Option<Expression>, args: Vec<Option<Expression>>) -> Self {
+        let function = function.map(|o| Box::new(o));
+        Expression::Call(CallExpression {
+            function: function,
+            args: args,
         })
     }
 }

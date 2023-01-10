@@ -60,6 +60,9 @@ impl Lexer {
                 '/' => Some(Token::slash()),
                 '%' => Some(Token::percent()),
                 ';' => Some(Token::semicolon()),
+                '(' => Some(Token::lparen()),
+                ')' => Some(Token::rparen()),
+                ',' => Some(Token::comma()),
                 '=' => {
                     if let Some(ch_next) = self.program.chars().nth(self.pos) {
                         if ch_next == '=' {

@@ -14,6 +14,9 @@ pub enum TokenType {
     TokenLet,
     TokenInt,
     TokenIdent,
+    TokenLparen,
+    TokenRparen,
+    TokenComma,
     TokenUnknown,
 }
 
@@ -101,6 +104,13 @@ impl Token {
         }
     }
 
+    pub fn keyword_let() -> Self {
+        Token {
+            t: TokenType::TokenLet,
+            literal: "let".to_string(),
+        }
+    }
+
     pub fn int(n: String) -> Self {
         Token {
             t: TokenType::TokenInt,
@@ -115,10 +125,24 @@ impl Token {
         }
     }
 
-    pub fn keyword_let() -> Self {
+    pub fn lparen() -> Self {
         Token {
-            t: TokenType::TokenLet,
-            literal: "let".to_string(),
+            t: TokenType::TokenLparen,
+            literal: "(".to_string(),
+        }
+    }
+
+    pub fn rparen() -> Self {
+        Token {
+            t: TokenType::TokenRparen,
+            literal: ")".to_string(),
+        }
+    }
+
+    pub fn comma() -> Self {
+        Token {
+            t: TokenType::TokenComma,
+            literal: ",".to_string(),
         }
     }
 

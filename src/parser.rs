@@ -14,6 +14,7 @@ pub fn get_token_precedence(token_type: &TokenType) -> i8 {
         TokenType::TokenAnd => 4,
         TokenType::TokenPlus | TokenType::TokenMinus => 5,
         TokenType::TokenAsterisk | TokenType::TokenSlash | TokenType::TokenPercent => 6,
+        TokenType::TokenLparen => 7,
         _ => PRECEDENCE_LOWEST,
     }
 }
@@ -64,6 +65,44 @@ impl Parser {
     fn update_token(&mut self) {
         self.cur_token = self.next_token.take();
         self.next_token = self.lexer.as_mut().unwrap().gettoken();
+    }
+
+    fn parse_call_expression_list(&mut self) -> Result<Vec<Option<Expression>>> {
+        let mut v = Vec::new();
+
+        /* Handle the case when there's no parameters for the function call */
+        if let Some(next_token) = &self.next_token {
+            match &next_token.t {
+                TokenType::TokenRparen => {
+                    self.update_token();
+                    return Ok(v);
+                }
+                _ => {}
+            }
+        }
+
+        /* Otherwise, each argument should be an individual expression. The expression
+         * is expected to end up with ',' or ')' */
+        while let Some(token) = &self.cur_token {
+            match &token.t {
+                TokenType::TokenComma | TokenType::TokenLparen => {
+                    v.push(self.parse_expression(PRECEDENCE_LOWEST)?);
+                }
+                TokenType::TokenRparen => {
+                    /* If the current token is rparen, then this is the
+                     * end of the call expression. */
+                    break;
+                }
+                _ => {
+                    return Err(anyhow!(format!(
+                        "Parser error: unexpected token {:?} in the expression list",
+                        token
+                    )));
+                }
+            }
+        }
+
+        Ok(v)
     }
 
     fn parse_expression(&mut self, precedence: i8) -> Result<Option<Expression>> {
@@ -117,7 +156,15 @@ impl Parser {
                         let right = self.parse_expression(get_token_precedence(token_type))?;
                         left = Some(Expression::infix(Self::token_op(&token), left, right))
                     }
-                    TokenType::TokenSemiColon => break,
+                    TokenType::TokenLparen => {
+                        let right = self.parse_call_expression_list()?;
+                        left = Some(Expression::call(left, right));
+                    }
+                    TokenType::TokenSemiColon | TokenType::TokenComma | TokenType::TokenRparen => {
+                        /* TODO: Is it always reasonable to end an expression with
+                         * these tokens? */
+                        break;
+                    }
                     _ => {
                         return Err(anyhow!(format!(
                             "Parser error: unexpected token {:?} in the expression",
