@@ -95,7 +95,7 @@ impl Parser {
             let cur_token = self.cur_token.clone();
             if let Some(token) = cur_token {
                 let token_type = &token.t;
-                left = match token_type {
+                match token_type {
                     TokenType::TokenAssign => {
                         if !matches!(left.as_ref().unwrap(), Expression::Ident(_)) {
                             return Err(anyhow!(
@@ -104,7 +104,7 @@ impl Parser {
                         }
 
                         let right = self.parse_expression(get_token_precedence(token_type))?;
-                        Some(Expression::assign(left, right))
+                        left = Some(Expression::assign(left, right))
                     }
                     TokenType::TokenAnd
                     | TokenType::TokenOr
@@ -115,9 +115,9 @@ impl Parser {
                     | TokenType::TokenSlash
                     | TokenType::TokenPercent => {
                         let right = self.parse_expression(get_token_precedence(token_type))?;
-                        Some(Expression::infix(Self::token_op(&token), left, right))
+                        left = Some(Expression::infix(Self::token_op(&token), left, right))
                     }
-                    TokenType::TokenSemiColon => left,
+                    TokenType::TokenSemiColon => break,
                     _ => {
                         return Err(anyhow!(format!(
                             "Parser error: unexpected token {:?} in the expression",
